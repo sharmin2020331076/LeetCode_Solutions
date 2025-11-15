@@ -1,45 +1,37 @@
 class Solution {
-    int rowMask[9] = {0}, colMask[9] = {0}, boxMask[9] = {0};
 public:
     void solveSudoku(vector<vector<char>>& board) {
-        // Initialize masks
-        for (int r = 0; r < 9; r++) {
-            for (int c = 0; c < 9; c++) {
-                if (board[r][c] != '.') {
-                    int num = board[r][c] - '1';
-                    int box = (r/3)*3 + c/3;
-                    rowMask[r] |= (1 << num);
-                    colMask[c] |= (1 << num);
-                    boxMask[box] |= (1 << num);
+        backtrack(board);
+    }
+
+    private:
+      bool backtrack(vector<vector<char>>& board){
+        for(int row=0;row<9;row++){
+          for(int col=0;col<9;col++){
+            if(board[row][col]=='.'){
+              for(char num='1';num<='9';num++){
+                if(isValid(board,row,col,num)){
+                  board[row][col]=num;
+                  if(backtrack(board)) return true;
+                  board[row][col]='.';
                 }
+              }
+              return false;
             }
+          }
         }
-        backtrack(board, 0, 0);
-    }
+        return true;
+      }
 
-private:
-    bool backtrack(vector<vector<char>>& board, int r, int c) {
-        if (r == 9) return true;
-        if (c == 9) return backtrack(board, r+1, 0);
-        if (board[r][c] != '.') return backtrack(board, r, c+1);
+      bool isValid(vector<vector<char>>& board, int row, int col, int num){
+        for(int i=0;i<9;i++){
+          if(board[row][i]==num) return false;
+          if(board[i][col]==num) return false;
+          int subRow = 3*(row/3)+i/3;
+          int subCol = 3*(col/3)+i%3;
+          if(board[subRow][subCol]==num) return false;
 
-        int box = (r/3)*3 + c/3;
-        for (int num = 0; num < 9; num++) {
-            int mask = 1 << num;
-            if (!(rowMask[r] & mask) && !(colMask[c] & mask) && !(boxMask[box] & mask)) {
-                board[r][c] = '1' + num;
-                rowMask[r] |= mask;
-                colMask[c] |= mask;
-                boxMask[box] |= mask;
-
-                if (backtrack(board, r, c+1)) return true;
-
-                board[r][c] = '.';
-                rowMask[r] ^= mask;
-                colMask[c] ^= mask;
-                boxMask[box] ^= mask;
-            }
         }
-        return false;
-    }
+        return true;
+      }
 };
